@@ -33,7 +33,9 @@ void draw(){
   
   
       stroke(255,255,255);
-      
+  
+  
+  // Drawing on screen as mouse is being dragged using points array    
   for(int i =0; i < points.size()-1;i++){
       if(i==0){strokeWeight(2);}
       else{strokeWeight(points_thickness.get(i));}
@@ -42,17 +44,22 @@ void draw(){
   
   
   noStroke();
+  
+  // Draw all lines on screen
   for(int j=0;j<lines.size();j++){
     
+    // Draw play head as points(dots)
     ArrayList<PVector> dots = lines.get(j);
     FloatList p_thickness = lines_thickness.get(j);
     
     for(int i =0; i < dots.size()-1;i++){
       
-      stroke(0,0,0);
+      stroke(255,0,0);
       strokeWeight(10);
       if(i==playHeads.get(j)){
         
+        
+        /*
         //pushMatrix();
         float x_intercept = (dots.get(i+1).x - dots.get(i).x);
         float y_intercept = (dots.get(i+1).y - dots.get(i).y);
@@ -69,6 +76,7 @@ void draw(){
         float next_dist = dots.get(i).dist(dots.get(i+1));
         //println(next_dist);
         if(next_dist>5){move_playHead.get(j);}
+        */
         point(dots.get(i).x,dots.get(i).y);
         //popMatrix();
         
@@ -78,11 +86,13 @@ void draw(){
       if(i==0){strokeWeight(2);}
       else{strokeWeight(p_thickness.get(i));}
       //strokeWeight(2);
+      
+      // Draw lines between points
       line(dots.get(i).x,dots.get(i).y,dots.get(i+1).x,dots.get(i+1).y);
     }
   }
   
-  
+  // Every 25th frame, move play head to next point for every line 
   if(frameCount%25 == 0){
     
     for(int i=0;i<playHeads.size();i++){
