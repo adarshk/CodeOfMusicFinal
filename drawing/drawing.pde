@@ -1,5 +1,12 @@
 
 
+import toxi.physics2d.*;
+import toxi.physics2d.behaviors.*;
+import toxi.geom.*;
+
+VerletPhysics2D physics;
+Chain chain;
+
 ArrayList<ArrayList<PVector>> lines;
 ArrayList<PVector> points;
 IntList playHeads;
@@ -14,6 +21,16 @@ FloatList points_thickness;
 
 void setup(){
   size(700,700);
+  
+  //Verlet Physics
+  physics = new VerletPhysics2D();
+  physics.addBehavior(new GravityBehavior(new Vec2D(0,0.1)));
+  physics.setWorldBounds(new Rect(0,0,width,height));
+  
+  chain = new Chain(200,20,12,0.2);
+  
+  
+  // Other setup
   points = new ArrayList<PVector>();
   lines  = new ArrayList<ArrayList<PVector>>();
   playHeads = new IntList();
@@ -30,7 +47,7 @@ void draw(){
   //background(100,100,150);
   background(0,0,0);
   
-  
+
   
       stroke(255,255,255);
   
@@ -113,11 +130,18 @@ void draw(){
 //  for(PVector p : points){
 //    point(p.x,p.y);
 //  }
+
+  physics.update();
+  
+  chain.updateTail(mouseX,mouseY);
+  chain.display();
   
 }
 
 
 void mouseDragged(){
+  
+  chain.contains(mouseX,mouseY);
   
   PVector previous;
   
@@ -145,6 +169,8 @@ void mouseDragged(){
 
 
 void mouseReleased(){
+  
+  chain.release();
   
   lines.add(points);
   lines_thickness.add(points_thickness);
