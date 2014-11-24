@@ -19,6 +19,15 @@ ArrayList<FloatList> lines_thickness;
 FloatList points_thickness;
 
 
+//moving points 
+moving_points[] mymoving_points;
+int pNum = 350;
+int distance = 50;
+int pDistance=75;
+float strokeB=250;
+float strokeBs=1;
+
+
 void setup(){
   size(700,700);
   
@@ -39,17 +48,34 @@ void setup(){
   move_playHead = new HashMap<Integer,Boolean>();
   move_playHead_divisions = new HashMap<Integer,IntList>(); 
   no_of_divisions = new IntList();
+  smooth();
+  mymoving_points = new moving_points[pNum];
+  for (int i = 0; i < pNum; i++) {
+    mymoving_points[i] = new moving_points(random(width), random(height), random(-.7, .7));
+  }
 }
 
 void draw(){
   
   
+
   //background(100,100,150);
   background(0,0,0);
-  
+
+  //pink grid
+//  background(0,0,0);
+//  noStroke();
+//  for(int i=0; i<=7; i++){
+//   fill(255,20*i);
+//   rect(i*width/8,0,width/8,height);
+//   
+//   fill(255,10,20*i);
+//   rect(0,i*height/8,width,height/8);
+//  } 
+//  
 
   
-      stroke(255,255,255);
+      stroke(255,255,255,80);
   
   
   // Drawing on screen as mouse is being dragged using points array    
@@ -71,7 +97,11 @@ void draw(){
     
     for(int i =0; i < dots.size()-1;i++){
       
-      stroke(255,0,0);
+                float strokeR=map(mymoving_points[i].x, 0, width, 0, 255);
+          float strokeG=map(mymoving_points[i].y, 0, width, 0, 255);
+          stroke(strokeR, strokeG, strokeB);
+      
+      //stroke(255,0,0);
       strokeWeight(10);
       if(i==playHeads.get(j)){
         
@@ -99,7 +129,7 @@ void draw(){
         
       }
       noStroke();
-      stroke(255,255,255);
+      stroke(255,255,255,80);
       if(i==0){strokeWeight(2);}
       else{strokeWeight(p_thickness.get(i));}
       //strokeWeight(2);
@@ -136,6 +166,55 @@ void draw(){
   chain.updateTail(mouseX,mouseY);
   chain.display();
   
+//moving lines
+  strokeB=strokeB+strokeBs;
+  if (strokeB>=255) {
+    strokeBs=-strokeBs;
+  }
+  else if (strokeB<=0) {
+    strokeBs=-strokeBs;
+  }
+
+  for (int i = 0; i < pNum; i++) {
+    mymoving_points[i].display();
+    
+    for (int j = 0; j < i; j++) {
+      if (i != j) {
+        float distmoving_points = dist(mymoving_points[i].x, mymoving_points[i].y, mymoving_points[j].x, mymoving_points[j].y);
+
+        if (distmoving_points < distance) {
+          float strokeR=map(mymoving_points[i].x, 0, width, 0, 255);
+          float strokeG=map(mymoving_points[i].y, 0, width, 0, 255);
+          stroke(strokeR, strokeG, strokeB,90);
+          strokeWeight(0.4);
+          line(mymoving_points[i].x, mymoving_points[i].y, mymoving_points[j].x, mymoving_points[j].y);
+        }
+      }
+    }
+   
+   //playhead and lines
+  for (int l=0; l<lines.size();l++){
+    
+    ArrayList<PVector> dots = lines.get(l);
+    
+    for (int k=0; k<dots.size()-1;k++){
+      
+      float dist_playhead = 0;
+        if(k == playHeads.get(l)){      
+          dist_playhead= dist(mymoving_points[i].x, mymoving_points[i].y, dots.get(k).x, dots.get(k).y);
+        
+        if (dist_playhead < pDistance) {
+          float strokeR=map(mymoving_points[i].x, 0, width, 0, 255);
+          float strokeG=map(mymoving_points[i].y, 0, width, 0, 255);
+          stroke(strokeR, strokeG, strokeB);
+          strokeWeight(0.4);
+          line(mymoving_points[i].x, mymoving_points[i].y, dots.get(k).x, dots.get(k).y);
+        }
+        }
+    }
+    
+  }
+  }
 }
 
 
@@ -165,6 +244,7 @@ void mouseDragged(){
   
   
   points.add(p);
+
 }
 
 
