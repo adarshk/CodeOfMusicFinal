@@ -12,7 +12,6 @@ Piano[] piano;
 ArrayList<ArrayList<PVector>> lines;
 ArrayList<PVector> points;
 IntList playHeads;
-
 HashMap<Integer, Boolean> move_playHead;
 HashMap<Integer, IntList> move_playHead_divisions;
 IntList no_of_divisions;
@@ -62,6 +61,8 @@ void setup() {
   piano[7]= new Piano("C4");
 
   println(piano[1].getPitch());
+  
+  
 }
 
 void draw() {
