@@ -14,7 +14,7 @@ FloatList points_thickness;
 
 //moving points 
 moving_points[] mymoving_points;
-int pNum = 200;
+int pNum = 350;
 int distance = 20;
 int pDistance=75;
 float strokeB=250;
@@ -22,14 +22,16 @@ float strokeBs=1;
 
 // Create a MidiBus object
 MidiBus mb;
-boolean play = false;
+MidiBus bb;
+
+boolean play = true;
 
 // Last mouse coordinates
 int lastX = 0;
 int lastY = 0;
 
 void setup() {
-  size(700, 700);
+  size(1440, 900);
   points = new ArrayList<PVector>();
   lines  = new ArrayList<ArrayList<PVector>>();
   playHeads = new IntList();
@@ -45,6 +47,7 @@ void setup() {
   }
 
   mb = new MidiBus(this, -1, 3);
+  bb = new MidiBus(this, -1, 3);
 }
 
 void draw() {
@@ -93,9 +96,9 @@ void draw() {
 
       float strokeR=map(mymoving_points[i].x, 0, width, 0, 255);
       float strokeG=map(mymoving_points[i].y, 0, width, 0, 255);
-      stroke(strokeR, strokeG, strokeB);
-
-      //stroke(255,0,0);
+//      stroke(strokeR, strokeG, strokeB);
+        noStroke();
+      stroke(255,80);
       strokeWeight(10);
       if (i==playHeads.get(j)) {
 
@@ -122,18 +125,22 @@ void draw() {
         //draw playhead 
         point(dots.get(i).x, dots.get(i).y);
         //midi
-          float p = 60; 
-          float x = ((dots.get(i).x) / width) * 20;
-          float y = ((dots.get(i).y) / height) * 20;
-          int pitch = int(p + x + y);
-          if ((dots.get(i).x != lastX || dots.get(i).y != lastY) && play) {
-            mb.sendNoteOn(1, pitch, 127);
-          }
-          float lastX = dots.get(i).x;
-          float lastY = dots.get(i).y;
-          // Delay .1 seconds to prevent madness
-          //        delay(1);
-       
+        float p = 0; 
+        float x = ((dots.get(i).x) / width) * 100;
+        float y = ((dots.get(i).y) / height) * 100;
+        println(x,y);
+        int pitch = int(p + x + y);
+//        int cc= map 
+        if ((dots.get(i).x != lastX || dots.get(i).y != lastY) && play) {
+//          mb.sendNoteOn(2, int(random(0,pitch)), 127);
+          mb.sendNoteOn(2, pitch, 127);
+
+        }
+        float lastX = dots.get(i).x;
+        float lastY = dots.get(i).y;
+        // Delay .1 seconds to prevent madness
+        //        delay(1);
+
 
 
         //
@@ -197,6 +204,17 @@ void draw() {
           stroke(255);
           strokeWeight(0.4);
           line(mymoving_points[i].x, mymoving_points[i].y, mymoving_points[j].x, mymoving_points[j].y);
+          //midi
+          float p = 40; 
+          float x = ((mymoving_points[i].x) / width) * 20;
+          float y = ((mymoving_points[i].y) / height) * 20;
+          int pitch = int(p + x + y);
+            mb.sendNoteOn(3, pitch, 127);
+          
+//          float lastX = dots.get(i).x;
+//          float lastY = dots.get(i).y;
+          // Delay .1 seconds to prevent madness
+          //        delay(1);
         }
       }
     }
@@ -275,7 +293,7 @@ void mouseClicked() {
 }
 
 // Toggle playing
-void mousePressed() {
-  play = !play;
-}
+//void mousePressed() {
+//  play = !play;
+//}
 
