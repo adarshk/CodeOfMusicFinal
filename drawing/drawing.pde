@@ -1,5 +1,7 @@
 import themidibus.*;
 
+import pitaru.sonia_v2_9.*;
+
 ArrayList<ArrayList<PVector>> lines;
 ArrayList<PVector> points;
 IntList playHeads;
@@ -20,18 +22,46 @@ int pDistance=75;
 float strokeB=250;
 float strokeBs=1;
 
+int pitch = 0;
+int velocity=0;
+
 // Create a MidiBus object
 MidiBus mb;
 MidiBus bb;
 
-boolean play = true;
+boolean play = false;
 
 // Last mouse coordinates
 int lastX = 0;
 int lastY = 0;
 
+
+Sample[] mySample = new Sample[5]; 
+
+Sample mySample1;
+Sample mySample2;
+Sample mySample3;
+Sample mySample4;
+
 void setup() {
   size(1440, 900);
+  
+  Sonia.start(this);
+ 
+ for(int i=1;i<5;i++){
+   
+   println(Integer.toString(i)+".wav");
+   mySample[i] = new Sample(Integer.toString(i)+".wav");
+   mySample[i].play();
+   mySample[i].setVolume(0.0);
+   mySample[i].repeat();
+ }
+  
+//  mySample1 = new Sample("1.wav");
+//  mySample1.play();
+//  mySample1.setVolume(0.0);
+//  mySample1.repeat(); 
+  
   points = new ArrayList<PVector>();
   lines  = new ArrayList<ArrayList<PVector>>();
   playHeads = new IntList();
@@ -53,7 +83,14 @@ void setup() {
 void draw() {
 
 
+  
   background(0);
+  
+  
+  if(play == false){
+  background(255);  
+  }
+  
   //pink grid
   //  background(0,0,0);
   //  noStroke();
@@ -70,6 +107,10 @@ void draw() {
 
 
   stroke(255, 255, 255, 80);
+  
+  if(play == false){
+    stroke(0, 0, 0, 80);
+  }
 
 
   // Drawing on screen as mouse is being dragged using points array    
@@ -96,9 +137,14 @@ void draw() {
 
       float strokeR=map(mymoving_points[i].x, 0, width, 0, 255);
       float strokeG=map(mymoving_points[i].y, 0, width, 0, 255);
-//      stroke(strokeR, strokeG, strokeB);
-        noStroke();
-      stroke(255,80);
+      //      stroke(strokeR, strokeG, strokeB);
+      noStroke();
+      
+      stroke(255, 80);
+      
+      if(play == false){
+      stroke(0, 80);
+      }
       strokeWeight(10);
       if (i==playHeads.get(j)) {
 
@@ -125,17 +171,47 @@ void draw() {
         //draw playhead 
         point(dots.get(i).x, dots.get(i).y);
         //midi
-        float p = 0; 
-        float x = ((dots.get(i).x) / width) * 100;
-        float y = ((dots.get(i).y) / height) * 100;
-        println(x,y);
-        int pitch = int(p + x + y);
-//        int cc= map 
+        float p = 60; 
+        //float x = ((dots.get(i).x) / width) * 30;
+        int x = int(map(dots.get(i).x,0,width,1,4));
+        int y = int(map(dots.get(i).y,0,height,0,100));
+//        println(x, y);
+        pitch = int(p + x);
+        velocity=int(map(p_thickness.get(i),0,11,0,127));
         if ((dots.get(i).x != lastX || dots.get(i).y != lastY) && play) {
-//          mb.sendNoteOn(2, int(random(0,pitch)), 127);
-          mb.sendNoteOn(2, pitch, 127);
-
+          mb.sendNoteOn(j+1, pitch, velocity);
+//          mb.sendNoteOn(1, 60, 127);
+          int channel=j+1;
+          int number=7;
+          int value =90;
+          //mb.sendControllerChange(1 , number, int(map(pitch,0,255,-60,6))); // Send a controllerChange
+          mb.sendControllerChange(channel , number, y); // Send a controllerChange
+          //mb.sendControllerChange(channel , 16, x); // Send a controllerChange
+          //mb.sendNoteOff(j+1, pitch, velocity);
         }
+        
+        else if(play == false){
+          float speed=map(p_thickness.get(i),0,11,5,1);
+          
+          int j_temp = j+1;
+          
+          if(j_temp > 4){j_temp =  j % 4; 
+             
+               if(j_temp ==0 || j_temp>4){
+                 j_temp =1;
+               }
+     
+            }
+          //int j_temp = (j+1) % 6;
+          
+          mySample[j_temp].setVolume(1.0);
+          mySample[j_temp].setSpeed(speed);
+          
+          //mySample1.setVolume(1.0);
+          //mySample1.setSpeed(speed);
+          //println("speed - "+speed);
+        }
+        
         float lastX = dots.get(i).x;
         float lastY = dots.get(i).y;
         // Delay .1 seconds to prevent madness
@@ -147,8 +223,16 @@ void draw() {
 
         //popMatrix();
       }
+      
+      
+      
       noStroke();
       stroke(255, 255, 255, 80);
+      
+      if(play == false){
+        stroke(0, 0, 0, 80);
+      }
+      
       if (i==0) {
         strokeWeight(2);
       } else {
@@ -158,15 +242,25 @@ void draw() {
 
       // Draw lines between points
       line(dots.get(i).x, dots.get(i).y, dots.get(i+1).x, dots.get(i+1).y);
+      
     }
   }
 
-  // Every 25th frame, move play head to next point for every line 
-  if (frameCount%25 == 0) {
+  // Every 25th frame, move play head to next point for every line
+ 
+ 
+ 
+   if(play){
+     
+     if (frameCount%25 == 0) {
 
     for (int i=0; i<playHeads.size (); i++) {
 
       ArrayList<PVector> dots = lines.get(i);
+      
+      //println("dots.size()-"+dots.size());
+      
+      
 
       int temp = playHeads.get(i);
 
@@ -176,6 +270,66 @@ void draw() {
         playHeads.set(i, ++temp);
       }
     }
+  }
+     
+   }
+ 
+ 
+   else if(play == false){
+ 
+ 
+ 
+  
+  //if (frameCount%25 == 0) {
+
+    for (int i=0; i<playHeads.size (); i++) {
+
+      ArrayList<PVector> dots = lines.get(i);
+      
+      //println("dots.size()-"+dots.size());
+      
+      int dots_size = dots.size();
+      if(dots_size ==0){dots_size = 1;}
+      
+      //println("dots_size-"+dots_size);
+      
+      float increment = 60.0 / dots_size;
+      //println("increment - "+increment);
+      
+      
+      int i_temp = i+1;
+          
+          if(i_temp > 4){i_temp =  i % 4; 
+             
+               if(i_temp ==0 || i_temp>4){
+                 i_temp =1;
+               }
+     
+            }
+      
+      float current_second = mySample[i_temp].getCurrentFrame() / 44100;
+      //float current_second = mySample[i+1%4].getCurrentFrame() / 44100;
+      
+      float move = current_second / increment;
+      
+      //int move_map = map(dots_size, 0,);
+      
+      //println("current_second - "+current_second);
+      //println("move - "+move);
+      
+      //int where_playhead = playHeads.get(i)
+
+      //int temp = playHeads.get(i);
+
+      //if (temp > dots.size() - 2) {
+        if (move > dots.size() - 1) {
+        playHeads.set(i, 0);
+      } else {
+        //playHeads.set(i, ++temp);
+        playHeads.set(i, (int)move);
+      }
+    }
+  //}
   }
 
   //  for(PVector p : points){
@@ -202,6 +356,9 @@ void draw() {
           float strokeG=map(mymoving_points[i].y, 0, width, 0, 255);
           //          stroke(strokeR, strokeG, strokeB,90);
           stroke(255);
+          if(play == false){
+        stroke(0);
+      }
           strokeWeight(0.4);
           line(mymoving_points[i].x, mymoving_points[i].y, mymoving_points[j].x, mymoving_points[j].y);
           //midi
@@ -209,10 +366,13 @@ void draw() {
           float x = ((mymoving_points[i].x) / width) * 20;
           float y = ((mymoving_points[i].y) / height) * 20;
           int pitch = int(p + x + y);
-            mb.sendNoteOn(3, pitch, 127);
           
-//          float lastX = dots.get(i).x;
-//          float lastY = dots.get(i).y;
+          if(play){
+          mb.sendNoteOn(0, pitch, 127);
+          }
+
+          //          float lastX = dots.get(i).x;
+          //          float lastY = dots.get(i).y;
           // Delay .1 seconds to prevent madness
           //        delay(1);
         }
@@ -235,6 +395,9 @@ void draw() {
             float strokeG=map(mymoving_points[i].y, 0, width, 0, 255);
             //          stroke(strokeR, strokeG, strokeB);
             stroke(255);
+            if(play == false){
+              stroke(0);
+                }
             strokeWeight(0.4);
             line(mymoving_points[i].x, mymoving_points[i].y, dots.get(k).x, dots.get(k).y);
           }
@@ -297,3 +460,44 @@ void mouseClicked() {
 //  play = !play;
 //}
 
+void keyPressed(){
+ 
+   if(key == 'X' || key == 'x'){
+     
+     for (int j=0; j<lines.size (); j++) {
+     mb.sendNoteOff(1, 0, 0);
+     
+     }
+     exit();
+   }
+   
+   
+   if(key == 'C' || key == 'c'){
+   play = !play;
+   
+   if(play){
+     
+     for(int i=1;i<5;i++){
+     mySample[i].stop();
+   //mySample[i].setVolume(0.0);
+   //mySample[i].repeat();
+     }
+   }
+   else if(play ==false){
+     
+     for(int i=1;i<5;i++){
+   mySample[i].play();
+   mySample[i].setVolume(0.0);
+   mySample[i].repeat();
+     }
+   }
+   
+   }
+  
+}
+
+
+public void stop(){ 
+  Sonia.stop(); 
+  super.stop(); 
+}
